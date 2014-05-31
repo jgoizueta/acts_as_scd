@@ -2,7 +2,11 @@ require 'test_helper'
 
 class Region <   ActiveRecord::Base
 
-  acts_as_scd
+  has_identity :string
+
+  def compute_identity
+    self.identity = code
+  end
 
   def to_s
     name

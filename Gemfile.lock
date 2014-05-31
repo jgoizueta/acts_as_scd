@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     acts_as_scd (0.0.1)
+      modalsupport (~> 0.9.2)
       rails (~> 4.1.1)
 
 GEM
@@ -44,6 +45,7 @@ GEM
       treetop (~> 1.4.8)
     mime-types (1.25.1)
     minitest (5.3.4)
+    modalsupport (0.9.2)
     multi_json (1.10.1)
     polyglot (0.3.5)
     rack (1.5.2)

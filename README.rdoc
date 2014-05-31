@@ -15,6 +15,8 @@ SCD models must provide a +compute_identity+ method to compute the identity attr
 
 = TODO
 
-Require modal_fields or make it optional?
-
-Create generator to add identity to a model and generate migration
+* Write Tests
+* Write Documentation
+* Require modal_fields or make it optional?
+* Create generator to add identity to a model and generate migration
+* Release gem 1.0.0

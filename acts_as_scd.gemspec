@@ -19,5 +19,7 @@ Gem::Specification.new do |s|
   # we will make it work first with rails 3, then support Rails 4
   # s.add_dependency "rails", "~> 3.2.13"
 
+  s.add_dependency 'modalsupport', "~> 0.9.2"
+
   s.add_development_dependency "sqlite3"
 end
