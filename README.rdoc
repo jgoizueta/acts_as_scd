@@ -1,0 +1,20 @@
+= Acts as SCD (Slowly Changing Dimension)
+
+This gem provides SCD behaviour for ActiveRecord models.
+
+Models that use this plugin must provide an +identity+ column that establishes the identity
+of an entity that may be representented by multiple records (iterations), each one of them
+representing the entity for a specific 'effective' period of time.
+
+The effective period of an iteration is defined with day-granularity by two integer columns,
++effective_from+ and +effective_to+ using YYYYMMDD format.
+By default effective_from has value 0 and effective_to 99999999; these special values meaning
+unlimited periods of time (0 represents the 'start of time' and 99999999 the 'end of time').
+
+SCD models must provide a +compute_identity+ method to compute the identity attribute.
+
+= TODO
+
+Require modal_fields or make it optional?
+
+Create generator to add identity to a model and generate migration

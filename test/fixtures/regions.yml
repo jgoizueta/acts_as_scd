@@ -1,0 +1,24 @@
+caledonia:
+  name: 'Eternal Caledonia'
+  code: '0001'
+  identity: '0001'
+  effective_from: 0
+  effective_to: 99999999
+changedonia_first:
+  name: 'Volatile Changedonia'
+  code: '0002'
+  identity: '0002'
+  effective_from: 0
+  effective_to: 20140302
+changedonia_second:
+  name: 'Volatile Changedonia'
+  code: '0002'
+  identity: '0002'
+  effective_from: 20140302
+  effective_to: 20140507
+changedonia_third:
+  name: 'Volatile Changedonia'
+  code: '0002'
+  identity: '0002'
+  effective_from: 20140507
+  effective_to: 99999999
