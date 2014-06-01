@@ -89,6 +89,221 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal ActsAsScd::END_OF_TIME, country.effective_to
   end
 
+  test "create identities and iterations" do
+    t3 = Country.create_identity(name: 'Testing 3', code: 'T3', area: 1000)
+    assert_equal t3.identity, 'T3'
+    assert_equal ActsAsScd::START_OF_TIME, t3.effective_from
+    assert_equal ActsAsScd::END_OF_TIME, t3.effective_to
+    assert_equal 'T3', t3.code
+    assert_equal 'Testing 3', t3.name
+    assert_equal 1000, t3.area
+
+    date1 = Date.new(2014,02,02)
+    t3_2 = Country.create_iteration('T3', { area: 2000 }, date1)
+    t3.reload
+    assert_equal 2000, t3_2.area
+    assert_equal t3.code, t3_2.code
+    assert_equal t3.name, t3_2.name
+    assert_equal ActsAsScd::START_OF_TIME, t3.effective_from
+    assert_equal date1, t3.effective_to_date
+    assert_equal date1, t3_2.effective_from_date
+    assert_equal ActsAsScd::END_OF_TIME, t3_2.effective_to
+
+    date2 = Date.new(2014,03,02)
+    t3_3 = Country.create_iteration('T3', { area: 3000 }, date2)
+    t3.reload
+    t3_2.reload
+    assert_equal 3000, t3_3.area
+    assert_equal t3.code, t3_3.code
+    assert_equal t3.name, t3_3.name
+    assert_equal ActsAsScd::START_OF_TIME, t3.effective_from
+    assert_equal date1, t3.effective_to_date
+    assert_equal date1, t3_2.effective_from_date
+    assert_equal date2, t3_2.effective_to_date
+    assert_equal date2, t3_3.effective_from_date
+    assert_equal ActsAsScd::END_OF_TIME, t3_3.effective_to
+
+    assert_equal t3_3, Country.find_by_identity('T3')
+
+    assert_equal t3_3, t3.current
+    assert_equal t3_3, t3.at(date2)
+    assert_equal t3_3, t3.at(date2+10)
+    assert_equal t3_2, t3.at(date2-1)
+    assert_equal t3_2, t3.at(date1)
+    assert_equal t3_2, t3.at(date1+10)
+    assert_equal t3,   t3.at(date1-1)
+
+    assert_equal t3_3, t3_2.current
+    assert_equal t3_3, t3_2.at(date2)
+    assert_equal t3_3, t3_2.at(date2+10)
+    assert_equal t3_2, t3_2.at(date2-1)
+
+    assert_equal t3, t3.initial
+    assert_equal t3, t3_2.initial
+    assert_equal t3, t3_3.initial
+
+    assert_equal t3_2, t3.successor
+    assert_equal t3_3, t3_2.successor
+    assert_nil         t3_3.successor
+    assert_equal t3_2, t3_3.antecessor
+    assert_equal t3,   t3_2.antecessor
+    assert_nil         t3.antecessor
+    assert_equal [t3, t3_2], t3_3.antecessors
+    assert_equal [t3], t3_2.antecessors
+    assert_equal [], t3.antecessors
+    assert_equal [t3_2, t3_3], t3.successors
+    assert_equal [t3_3], t3_2.successors
+    assert_equal [], t3_3.successors
+    assert_equal [t3, t3_2, t3_3], t3.history
+    assert_equal [t3, t3_2, t3_3], t3_2.history
+    assert_equal [t3, t3_2, t3_3], t3_3.history
+
+    assert_equal t3_3, t3.latest
+    assert_equal t3_3, t3_2.latest
+    assert_equal t3_3, t3_3.latest
+
+    assert_equal t3, t3_3.earliest
+    assert_equal t3, t3_2.earliest
+    assert_equal t3, t3.earliest
+
+    assert t3.ended?
+    assert t3_2.ended?
+    assert !t3_3.ended?
+
+    assert !t3.ended_at?(date1-1)
+    assert t3.ended_at?(date1)
+    assert t3.ended_at?(date1+1)
+    assert t3.ended_at?(date2-1)
+    assert t3.ended_at?(date2)
+    assert t3.ended_at?(date2+1)
+
+    assert !t3_2.ended_at?(date1-1)
+    assert !t3_2.ended_at?(date1)
+    assert !t3_2.ended_at?(date1+1)
+    assert !t3_2.ended_at?(date2-1)
+    assert t3_2.ended_at?(date2)
+    assert t3_2.ended_at?(date2+1)
+
+    assert !t3_3.ended_at?(date1-1)
+    assert !t3_3.ended_at?(date1)
+    assert !t3_3.ended_at?(date1+1)
+    assert !t3_3.ended_at?(date2-1)
+    assert !t3_3.ended_at?(date2)
+    assert !t3_3.ended_at?(date2+1)
+
+    assert t3.initial?
+    assert !t3_2.initial?
+    assert !t3_3.initial?
+
+    assert !t3.current?
+    assert !t3_2.current?
+    assert t3_3.current?
+
+    assert !t3.past_limited?
+    assert t3.future_limited?
+    assert t3_2.past_limited?
+    assert t3_2.future_limited?
+    assert t3_3.past_limited?
+    assert !t3_3.future_limited?
+
+    date3 = Date.new(2014,04,02)
+    # t3_2.terminate_identity(date3)
+    Country.terminate_identity 'T3', date3
+    t3.reload
+    t3_2.reload
+    t3_3.reload
+    assert_nil t3.current
+    assert_nil t3_2.current
+    assert_nil t3_3.current
+    assert_nil Country.find_by_identity('T3')
+
+    assert_nil         t3.at(date3+1)
+    assert_nil         t3.at(date3)
+    assert_equal t3_3, t3.at(date3-1)
+    assert_equal t3_3, t3.at(date2)
+    assert_equal t3_3, t3.at(date2+10)
+    assert_equal t3_2, t3.at(date2-1)
+    assert_equal t3_2, t3.at(date1)
+    assert_equal t3_2, t3.at(date1+10)
+    assert_equal t3,   t3.at(date1-1)
+
+    assert_equal t3_3, t3_2.at(date2)
+    assert_equal t3_3, t3_2.at(date2)
+    assert_equal t3_2, t3_2.at(date2-1)
+
+    assert_equal t3, t3.initial
+    assert_equal t3, t3_2.initial
+    assert_equal t3, t3_3.initial
+
+    assert_equal t3_2, t3.successor
+    assert_equal t3_3, t3_2.successor
+    assert_nil         t3_3.successor
+    assert_equal t3_2, t3_3.antecessor
+    assert_equal t3,   t3_2.antecessor
+    assert_nil         t3.antecessor
+    assert_equal [t3, t3_2], t3_3.antecessors
+    assert_equal [t3], t3_2.antecessors
+    assert_equal [], t3.antecessors
+    assert_equal [t3_2, t3_3], t3.successors
+    assert_equal [t3_3], t3_2.successors
+    assert_equal [], t3_3.successors
+    assert_equal [t3, t3_2, t3_3], t3.history
+    assert_equal [t3, t3_2, t3_3], t3_2.history
+    assert_equal [t3, t3_2, t3_3], t3_3.history
+
+    assert_equal t3_3, t3.latest
+    assert_equal t3_3, t3_2.latest
+    assert_equal t3_3, t3_3.latest
+
+    assert_equal t3, t3_3.earliest
+    assert_equal t3, t3_2.earliest
+    assert_equal t3, t3.earliest
+
+    assert t3.ended?
+    assert t3_2.ended?
+    assert t3_3.ended?
+
+    assert !t3.ended_at?(date1-1)
+    assert t3.ended_at?(date1)
+    assert t3.ended_at?(date1+1)
+    assert t3.ended_at?(date2-1)
+    assert t3.ended_at?(date2)
+    assert t3.ended_at?(date2+1)
+
+    assert !t3_2.ended_at?(date1-1)
+    assert !t3_2.ended_at?(date1)
+    assert !t3_2.ended_at?(date1+1)
+    assert !t3_2.ended_at?(date2-1)
+    assert t3_2.ended_at?(date2)
+    assert t3_2.ended_at?(date2+1)
+
+    assert !t3_3.ended_at?(date1-1)
+    assert !t3_3.ended_at?(date1)
+    assert !t3_3.ended_at?(date1+1)
+    assert !t3_3.ended_at?(date2-1)
+    assert !t3_3.ended_at?(date2)
+    assert !t3_3.ended_at?(date2+1)
+    assert !t3_3.ended_at?(date3-1)
+    assert  t3_3.ended_at?(date3)
+    assert  t3_3.ended_at?(date3+1)
+
+    assert t3.initial?
+    assert !t3_2.initial?
+    assert !t3_3.initial?
+
+    assert !t3.current?
+    assert !t3_2.current?
+    assert !t3_3.current?
+
+    assert !t3.past_limited?
+    assert t3.future_limited?
+    assert t3_2.past_limited?
+    assert t3_2.future_limited?
+    assert t3_3.past_limited?
+    assert t3_3.future_limited?
+
+  end
+
   test "find_by_identity" do
 
     de1 = countries(:de1)
