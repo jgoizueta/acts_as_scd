@@ -60,7 +60,7 @@ module ActsAsScd
   end
 
   def ended_at?(date)
-    effective_to < self.class.effective_date(date)
+    effective_to <= self.class.effective_date(date)
   end
 
   def effective_period
