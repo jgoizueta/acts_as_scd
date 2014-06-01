@@ -124,12 +124,13 @@ module ActsAsScd
     # The inverse association should be belongs_to_identity
     def has_many_iterations_through_identity(assoc, options={})
       fk =  options[:foreign_key] || :"#{model_name.to_s.underscore}_identity"
-      other_model_name = options[:class_name] || assoc.to_s.singularize.camelize
+      assoc_singular = assoc.to_s.singularize
+      other_model_name = options[:class_name] || assoc_singular.camelize
       other_model = other_model_name.constantize
       pk = IDENTITY_COLUMN
 
       # all children iterations
-      has_many :"#{assoc}_iterations", class_name: other_model_name, foreign_key: fk, primary_key: pk
+      has_many :"#{assoc_singular}_iterations", class_name: other_model_name, foreign_key: fk, primary_key: pk
 
       # current_children
       has_many assoc, ->{ where "#{other_model.effective_to_column_sql}=#{END_OF_TIME}" },
@@ -139,28 +140,28 @@ module ActsAsScd
       # children at some date
       define_method :"#{assoc}_at" do |date|
         # other_model.unscoped.at(date).where(fk=>send(pk))
-        send(:"#{assoc}_iterations").scoped.at(date)
+        send(:"#{assoc_singular}_iterations").scoped.at(date)
       end
 
       # all children identities
-      define_method :"#{assoc}_identities" do
+      define_method :"#{assoc_singular}_identities" do
         # send(:"#{assoc}_iterations").select("DISTINCT #{other_model.identity_column_sql}").reorder(other_model.identity_column_sql).pluck(:identity)
         # other_model.unscoped.where(fk=>send(pk)).identities
-        send(:"#{assoc}_iterations").identities
+        send(:"#{assoc_singular}_iterations").identities
       end
 
       # children identities at a date
-      define_method :"#{assoc}_identities_at" do |date=nil|
+      define_method :"#{assoc_singular}_identities_at" do |date=nil|
         # send(:"#{assoc}_iterations_at", date).select("DISTINCT #{other_model.identity_column_sql}").reorder(other_model.identity_column_sql).pluck(:identity)
         # other_model.unscoped.where(fk=>send(pk)).identities_at(date)
-        send(:"#{assoc}_iterations").identities_at(date)
+        send(:"#{assoc_singular}_iterations").identities_at(date)
       end
 
       # current children identities
-      define_method :"#{assoc}_current_identities" do
+      define_method :"#{assoc_singular}_current_identities" do
         # send(assoc).select("DISTINCT #{other_model.identity_column_sql}").reorder(other_model.identity_column_sql).pluck(:identity)
         # other_mode.unscoped.where(fk=>send(pk)).current_identities
-        send(:"#{assoc}_iterations").current_identities
+        send(:"#{assoc_singular}_iterations").current_identities
       end
 
     end
