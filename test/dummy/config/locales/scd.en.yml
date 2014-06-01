@@ -1,0 +1,7 @@
+en:
+  scd:
+    period:
+      until: 'to'
+      from:  'since'
+      between: '-'
+      always: '-'

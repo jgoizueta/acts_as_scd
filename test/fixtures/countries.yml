@@ -4,21 +4,80 @@ caledonia:
   identity: 'CL'
   effective_from: 0
   effective_to: 99999999
+
 changedonia_first:
   name: 'Volatile Changedonia'
   code: 'CG'
   identity: 'CG'
   effective_from: 0
   effective_to: 20140302
+
 changedonia_second:
   name: 'Volatile Changedonia'
   code: 'CG'
   identity: 'CG'
   effective_from: 20140302
   effective_to: 20140507
+
 changedonia_third:
   name: 'Volatile Changedonia'
   code: 'CG'
   identity: 'CG'
   effective_from: 20140507
+  effective_to: 99999999
+
+de1:
+  code: DEU
+  name: Germany
+  area: 357_021
+  identity: DEU
+  effective_from: 0
+  effective_to: 19491007
+
+de2:
+  code: DEU
+  name: Germany
+  area: 248_688
+  identity: DEU
+  effective_from: 19491007
+  effective_to: 19901003
+
+de3:
+  code: DEU
+  name: Germany
+  area: 357_021
+  identity: DEU
+  effective_from: 19901003
+  effective_to: 99999999
+
+ddr:
+  code: DDR
+  name: East Germany
+  area: 108_333
+  identity: DDR
+  effective_from: 19491007
+  effective_to: 19901003
+
+uk1:
+  code: GBR
+  name: United Kingdom
+  area: 243_610
+  identity: GBR
+  effective_from: 0
+  effective_to: 20140918
+
+uk2:
+  code: GBR
+  name: United Kingdom
+  area: 165_223
+  identity: GBR
+  effective_from: 20140918
+  effective_to: 99999999
+
+scotland:
+  code: SCO
+  name: Scotland
+  area: 78_387
+  identity: SCO
+  effective_from: 20140918
   effective_to: 99999999

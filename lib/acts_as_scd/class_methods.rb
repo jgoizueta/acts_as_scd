@@ -13,11 +13,13 @@ module ActsAsScd
       # the "DISTINCT" is lost from the SELECT if added explicitly  as in .select('DISTINCT #{col}'),
       # so we have avoid explicit use of DISTINCT in distinct_identities.
       # This can be used on association queries
-      # Rails 4:
-      #  unscope(:select).reorder(identity_column_sql).select(identity_column_sql).uniq
-      query = scoped.with_default_scope
-      query.select_values.clear
-      query.reorder(identity_column_sql).select(identity_column_sql).uniq
+      if ActiveRecord::VERSION::MAJOR > 3
+        unscope(:select).reorder(identity_column_sql).select(identity_column_sql).uniq
+      else
+        query = scoped.with_default_scope
+        query.select_values.clear
+        query.reorder(identity_column_sql).select(identity_column_sql).uniq
+      end
     end
 
     def ordered_identities
@@ -199,12 +201,15 @@ module ActsAsScd
     end
 
     def effective_periods(*args)
-      # Rails 4: periods = unscope(where: [:effective_from, :effective_to]).select("DISTINCT effective_from, effective_to").reorder('effective_from, effective_to')
       # periods = unscoped.select("DISTINCT effective_from, effective_to").order('effective_from, effective_to')
-
-      query = scoped.with_default_scope
-      query.select_values.clear
-      periods = query.reorder('effective_from, effective_to').select([:effective_from, :effective_to]).uniq
+      if ActiveRecord::VERSION::MAJOR > 3
+        # periods = unscope(where: [:effective_from, :effective_to]).select("DISTINCT effective_from, effective_to").reorder('effective_from, effective_to')
+        periods = unscope(where: [:effective_from, :effective_to]).select([:effective_from, :effective_to]).uniq.reorder('effective_from, effective_to')
+      else
+        query = scoped.with_default_scope
+        query.select_values.clear
+        periods = query.reorder('effective_from, effective_to').select([:effective_from, :effective_to]).uniq
+      end
 
       # formerly unscoped was used, so any desired condition had to be defined here
       periods = periods.where(*args) if args.present?

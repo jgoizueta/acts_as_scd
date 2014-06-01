@@ -87,6 +87,15 @@ module ActsAsScd
 
     end
 
+    # Since this code has been extracted from a Rails 3 project, we need to adapt to Rails 4
+    # For a gradual transition and to allow compatibility with Rails 3 we'll provide this
+    # for the time being:
+    if ActiveRecord::VERSION::MAJOR > 3
+      def scoped
+        all
+      end
+    end
+
   end
 
 end

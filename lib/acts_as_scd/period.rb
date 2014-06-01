@@ -37,7 +37,7 @@ module ActsAsScd
           ''
         else
           y,m,d = parse
-          "#{d}/#{m}/#{y}"
+          I18n.l Date.new(y, m, d)
         end
       end
 
@@ -77,15 +77,15 @@ module ActsAsScd
     def to_s(options={})
       if @start<=START_OF_TIME
         if @end>=END_OF_TIME
-          options[:always] || "-"
+          options[:always] || I18n.t(:"scd.period.always") || '-'
         else
-          "#{options[:until] || "hasta"} #{Period.date_to_s(@end)}"
+          "#{options[:until] || I18n.t(:"scd.period.until") || 'to'} #{Period.date_to_s(@end)}"
         end
       else
         if @end>=END_OF_TIME
-          "#{options[:since] || "desde"} #{Period.date_to_s(@start)}"
+          "#{options[:since] || I18n.t(:"scd.period.from") || 'since'} #{Period.date_to_s(@start)}"
         else
-          [options[:between], Period.date_to_s(@start), options[:between] || '-', Period.date_to_s(@end)].compact*' '
+          [Period.date_to_s(@start), options[:between] ||  I18n.t(:"scd.period.between") || '-', Period.date_to_s(@end)].compact*' '
         end
       end
     end

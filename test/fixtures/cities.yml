@@ -1,0 +1,95 @@
+berlin1:
+  code: BER
+  name: Berlin
+  area: 800
+  identity: BER
+  effective_from: 0
+  effective_to: 19491007
+  country_identity: DEU
+
+berlin2:
+  code: BER
+  name: Berlin
+  area: 400
+  identity: BER
+  effective_from: 19491007
+  effective_to: 19901003
+  country_identity: DEU
+
+berlin3:
+  code: BER
+  name: Berlin
+  area: 900
+  identity: BER
+  effective_from: 19901003
+  effective_to: 99999999
+  country_identity: DEU
+
+e_berlin:
+  code: EBER
+  name: East Berlin
+  area: 400
+  identity: EBER
+  effective_from: 19491007
+  effective_to: 19901003
+  country_identity: DDR
+
+hamburg:
+  code: HAM
+  name: Hamburg
+  area: 600
+  identity: HAM
+  effective_from: 0
+  effective_to: 99999999
+  country_identity: DEU
+
+leipzig_1:
+  code: LEI
+  name: Leipzig
+  area: 600
+  identity: LEI
+  effective_from: 0
+  effective_to: 19491007
+  country_identity: DEU
+
+leipzig_2:
+  code: LEI
+  name: Leipzig
+  area: 600
+  identity: LEI
+  effective_from: 19491007
+  effective_to: 19901003
+  country_identity: DDR
+
+leipzig_3:
+  code: LEI
+  name: Leipzig
+  area: 600
+  identity: LEI
+  effective_from: 19901003
+  effective_to: 99999999
+  country_identity: DEU
+
+london:
+  code: LON
+  name: London
+  identity: LON
+  effective_from: 0
+  effective_to: 99999999
+  country_identity: GBR
+
+edinburgh_uk:
+  code: EDI
+  name: Edinburgh
+  identity: EDI
+  effective_from: 0
+  effective_to: 20140918
+  country_identity: GBR
+
+edinburgh_scot:
+  code: EDI
+  name: Edinburgh
+  identity: EDI
+  effective_from: 20140918
+  effective_to: 99999999
+  country_identity: SCO
