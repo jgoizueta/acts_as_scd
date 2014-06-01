@@ -652,4 +652,29 @@ end
 
   end
 
+  test "query methods applied to associations" do
+    assert_equal  [:berlin3, :hamburg, :leipzig_3].map{|c| cities(c)},
+                  countries(:de3).city_iterations.current.order('code')
+    assert_equal  [:berlin1, :hamburg, :leipzig_1].map{|c| cities(c)},
+                  countries(:de3).city_iterations.at(Date.new(1949,10,6)).order('code')
+    assert_equal  [:berlin2, :hamburg].map{|c| cities(c)},
+                  countries(:de3).city_iterations.at(Date.new(1949,10,7)).order('code')
+    assert_equal  [:berlin2, :hamburg].map{|c| cities(c)},
+                  countries(:de3).city_iterations.at(Date.new(1990,10,2)).order('code')
+    assert_equal  [:berlin3, :hamburg, :leipzig_3].map{|c| cities(c)},
+                  countries(:de3).city_iterations.at(Date.new(1990,10,3)).order('code')
+
+    assert_equal  %w(BER HAM LEI),
+                  countries(:de3).city_iterations.ordered_identities
+    assert_equal  %w(BER HAM LEI),
+                  countries(:de3).city_iterations.at(Date.new(1949,10,6)).ordered_identities
+    assert_equal  %w(BER HAM),
+                  countries(:de3).city_iterations.at(Date.new(1949,10,7)).ordered_identities
+    assert_equal  %w(BER HAM),
+                  countries(:de3).city_iterations.at(Date.new(1990,10,2)).ordered_identities
+    assert_equal  %w(BER HAM LEI),
+                  countries(:de3).city_iterations.at(Date.new(1990,10,3)).ordered_identities
+
+  end
+
 end
