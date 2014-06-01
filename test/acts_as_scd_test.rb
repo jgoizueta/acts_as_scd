@@ -541,4 +541,115 @@ end
 
   end
 
+  test "has_many_iterations_through_identity association" do
+
+    de1 = countries(:de1)
+    de2 = countries(:de2)
+    de3 = countries(:de3)
+    ddr = countries(:ddr)
+    uk1 = countries(:uk1)
+    uk2 = countries(:uk2)
+    sco = countries(:scotland)
+    cal = countries(:caledonia)
+
+    # current citites
+    assert_equal [:berlin3, :hamburg, :leipzig_3].map{|c| cities(c)},
+                 de3.cities.order('code')
+
+    # all iterations
+    assert_equal [:berlin1, :berlin2, :berlin3, :hamburg, :leipzig_1, :leipzig_3].map{|c| cities(c)},
+                 de3.city_iterations.order('code, effective_from')
+    assert_equal [:berlin1, :berlin2, :berlin3, :hamburg, :leipzig_1, :leipzig_3].map{|c| cities(c)},
+                 de2.city_iterations.order('code, effective_from')
+    assert_equal [:berlin1, :berlin2, :berlin3, :hamburg, :leipzig_1, :leipzig_3].map{|c| cities(c)},
+                 de1.city_iterations.order('code, effective_from')
+    assert_equal [:e_berlin, :leipzig_2].map{|c| cities(c)},
+                 ddr.city_iterations.order('code, effective_from')
+
+    assert_equal [:berlin1, :hamburg, :leipzig_1].map{|c| cities(c)},
+                 de3.cities_at(Date.new(1949,10,6)).order('code')
+    assert_equal [:berlin2, :hamburg].map{|c| cities(c)},
+                 de3.cities_at(Date.new(1949,10,7)).order('code')
+    assert_equal [:berlin2, :hamburg].map{|c| cities(c)},
+                 de3.cities_at(Date.new(1990,10,2)).order('code')
+    assert_equal [:berlin3, :hamburg, :leipzig_3].map{|c| cities(c)},
+                 de3.cities_at(Date.new(1990,10,3)).order('code')
+
+    assert_equal %w(BER HAM LEI), de3.city_identities.sort
+    assert_equal %w(BER HAM LEI), de3.city_identities_at(Date.new(1949,10,6)).sort
+    assert_equal %w(BER HAM), de3.city_identities_at(Date.new(1949,10,7)).sort
+    assert_equal %w(BER HAM), de3.city_identities_at(Date.new(1990,10,2)).sort
+    assert_equal %w(BER HAM LEI), de3.city_identities_at(Date.new(1990,10,3)).sort
+
+    assert_equal %w(BER HAM LEI), de3.city_current_identities.sort
+    assert_equal %w(BER HAM LEI), de2.city_current_identities.sort
+    assert_equal %w(BER HAM LEI), de1.city_current_identities.sort
+
+    # current city countries
+    assert_equal de3, cities(:hamburg).country
+    assert_equal de3, cities(:berlin1).country
+    assert_equal de3, cities(:berlin2).country
+    assert_equal de3, cities(:berlin3).country
+    assert_equal de3, cities(:leipzig_1).country
+    assert_equal de3, cities(:leipzig_3).country
+    assert_nil        cities(:leipzig_2).country
+
+    assert_equal de1, cities(:hamburg).country_at(Date.new(1949,10,6))
+    assert_equal de2, cities(:hamburg).country_at(Date.new(1949,10,7))
+    assert_equal de2, cities(:hamburg).country_at(Date.new(1990,10,2))
+    assert_equal de3, cities(:hamburg).country_at(Date.new(1990,10,3))
+
+    assert_equal de1, cities(:berlin1).country_at(Date.new(1949,10,6))
+    assert_equal de2, cities(:berlin1).country_at(Date.new(1949,10,7))
+    assert_equal de2, cities(:berlin1).country_at(Date.new(1990,10,2))
+    assert_equal de3, cities(:berlin1).country_at(Date.new(1990,10,3))
+
+    assert_equal de1, cities(:berlin2).country_at(Date.new(1949,10,6))
+    assert_equal de2, cities(:berlin2).country_at(Date.new(1949,10,7))
+    assert_equal de2, cities(:berlin2).country_at(Date.new(1990,10,2))
+    assert_equal de3, cities(:berlin2).country_at(Date.new(1990,10,3))
+
+    assert_equal de1, cities(:berlin3).country_at(Date.new(1949,10,6))
+    assert_equal de2, cities(:berlin3).country_at(Date.new(1949,10,7))
+    assert_equal de2, cities(:berlin3).country_at(Date.new(1990,10,2))
+    assert_equal de3, cities(:berlin3).country_at(Date.new(1990,10,3))
+
+    assert_nil        cities(:e_berlin).country_at(Date.new(1949,10,6))
+    assert_equal ddr, cities(:e_berlin).country_at(Date.new(1949,10,7))
+    assert_equal ddr, cities(:e_berlin).country_at(Date.new(1990,10,2))
+    assert_nil        cities(:e_berlin).country_at(Date.new(1990,10,3))
+
+    assert_equal de1, cities(:leipzig_1).country_at(Date.new(1949,10,6))
+    assert_equal de2, cities(:leipzig_1).country_at(Date.new(1949,10,7)) # may cause surprise
+    assert_equal de2, cities(:leipzig_1).country_at(Date.new(1990,10,2)) # may cause surprise
+    assert_equal de3, cities(:leipzig_1).country_at(Date.new(1990,10,3))
+
+    assert_nil        cities(:leipzig_2).country_at(Date.new(1949,10,6)) # may cause surprise
+    assert_equal ddr, cities(:leipzig_2).country_at(Date.new(1949,10,7))
+    assert_equal ddr, cities(:leipzig_2).country_at(Date.new(1990,10,2))
+    assert_nil        cities(:leipzig_2).country_at(Date.new(1990,10,3)) # may cause surprise
+
+    assert_equal de1, cities(:leipzig_3).country_at(Date.new(1949,10,6))
+    assert_equal de2, cities(:leipzig_3).country_at(Date.new(1949,10,7)) # may cause surprise
+    assert_equal de2, cities(:leipzig_3).country_at(Date.new(1990,10,2)) # may cause surprise
+    assert_equal de3, cities(:leipzig_3).country_at(Date.new(1990,10,3))
+
+    # To avoid surprises, cities iterations should also be selected at the evaluation date:
+    date1 = Date.new(1949,10,7)
+    date2 = Date.new(1990,10,3)
+    assert_equal de1, cities(:leipzig_1).at(date1-1).country_at(date1-1)
+    assert_equal ddr, cities(:leipzig_1).at(date1).country_at(date1)
+    assert_equal ddr, cities(:leipzig_1).at(date2-1).country_at(date2-1)
+    assert_equal de3, cities(:leipzig_1).at(date2).country_at(date2)
+    assert_equal de1, cities(:leipzig_2).at(date1-1).country_at(date1-1)
+    assert_equal ddr, cities(:leipzig_2).at(date1).country_at(date1)
+    assert_equal ddr, cities(:leipzig_2).at(date2-1).country_at(date2-1)
+    assert_equal de3, cities(:leipzig_2).at(date2).country_at(date2)
+    assert_equal de1, cities(:leipzig_3).at(date1-1).country_at(date1-1)
+    assert_equal ddr, cities(:leipzig_3).at(date1).country_at(date1)
+    assert_equal ddr, cities(:leipzig_3).at(date2-1).country_at(date2-1)
+    assert_equal de3, cities(:leipzig_3).at(date2).country_at(date2)
+
+  end
+
 end
