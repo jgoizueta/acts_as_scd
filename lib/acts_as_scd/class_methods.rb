@@ -116,11 +116,12 @@ module ActsAsScd
        end
     end
 
-    # To be used in a parent class which has identity and has children which have identities too;
+    # Association yo be used in a parent class which has identity and has children
+    # which have identities too;
     # the association is implemented through the identity, not the PK.
     # The inverse association should be belongs_to_identity
     def has_many_iterations_through_identity(assoc, options={})
-      fk =  options[:foreing_key] || :"#{model_name.underscore}_identity"
+      fk =  options[:foreign_key] || :"#{model_name.to_s.underscore}_identity"
       other_model_name = options[:class_name] || assoc.to_s.singularize.camelize
       other_model = other_model_name.constantize
       pk = IDENTITY_COLUMN
@@ -129,7 +130,9 @@ module ActsAsScd
       has_many :"#{assoc}_iterations", class_name: other_model_name, foreign_key: fk, primary_key: pk
 
       # current_children
-      has_many assoc, {:foreign_key=>fk, :primary_key=>pk, :conditions=>"#{other_model.effective_to_column_sql}=#{END_OF_TIME}"}.merge(options)
+      has_many assoc, ->{ where "#{other_model.effective_to_column_sql}=#{END_OF_TIME}" },
+               options.reverse_merge(foreign_key: fk, primary_key: pk)
+      # has_many assoc, {:foreign_key=>fk, :primary_key=>pk, :conditions=>"#{other_model.effective_to_column_sql}=#{END_OF_TIME}"}.merge(options)
 
       # children at some date
       define_method :"#{assoc}_at" do |date|
@@ -160,11 +163,12 @@ module ActsAsScd
 
     end
 
-    # To be used in a parent class which has identity and has children which don't have identities;
+    # Association to be used in a parent class which has identity and has children
+    # which don't have identities;
     # the association is implemented through the identity, not the PK.
     # The inverse association should be belongs_to_identity
     def has_many_through_identity(assoc, options={})
-      fk = :"#{model_name.underscore}_identity"
+      fk = :"#{model_name.to_s.underscore}_identity"
       pk = IDENTITY_COLUMN
 
       has_many assoc, {:foreign_key=>fk, :primary_key=>pk}.merge(options)

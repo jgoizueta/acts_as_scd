@@ -1,6 +1,7 @@
 = Acts as SCD (Slowly Changing Dimension)
 
 This gem provides SCD behaviour for ActiveRecord models.
+The kind of SCD implemented is "Type 2" acording to http://en.wikipedia.org/wiki/Slowly_changing_dimension
 
 Models that use this plugin must provide an +identity+ column that establishes the identity
 of an entity that may be representented by multiple records (iterations), each one of them
@@ -13,6 +14,24 @@ unlimited periods of time (0 represents the 'start of time' and 99999999 the 'en
 
 SCD models must provide a +compute_identity+ method to compute the identity attribute.
 
+Here we use this terms:
+
+* *Identity*: key that identifies an entity of a SCD through time. The tables will have
+  additional surrogate primary keys (id by default) that identify each iteration of
+  the entity. Here we'll use identity often in a loose sense to refer to the entity which
+  it identifies.
+* *Iteration*: the different revisions or variations over time that an Identity may go through.
+  Each iteration of an identity has an effective period in which the iteration is the valid
+  representation of the identity. Here this period is specified by start and end dates (so that
+  variations which have any frequency higher than daily cannot be handled by this method)
+
+Note that the +current+ term, when applied to identities, is used to mean the last iteration
+if it extends indefinitely to the future (effective_to == 99999999). The last iteration may
+have a effective end date, meaning that it has disappeared at that date, and in that case it
+would not be current. Also, if iterations exist with effective dates in the future, the
+current iterations may not be active at the current date. To get the iteration which is active
+at the current or any other date, the +at+ methods should be used.
+
 = TODO
 
 * Write Tests
@@ -20,3 +39,5 @@ SCD models must provide a +compute_identity+ method to compute the identity attr
 * Require modal_fields or make it optional?
 * Create generator to add identity to a model and generate migration
 * Release gem 1.0.0
+* Test with Rails 3 & 4
+
