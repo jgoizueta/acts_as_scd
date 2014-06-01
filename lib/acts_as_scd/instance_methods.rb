@@ -75,14 +75,6 @@ module ActsAsScd
     Period::DateValue[effective_to].to_date
   end
 
-  def effective_from_h
-    H.to effective_from_date
-  end
-
-  def effective_to_h
-    H.to effective_to_date
-  end
-
   def initial?
     effective_period.initial?
   end
