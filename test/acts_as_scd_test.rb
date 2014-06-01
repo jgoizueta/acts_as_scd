@@ -89,6 +89,94 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal ActsAsScd::END_OF_TIME, country.effective_to
   end
 
+  test "find_by_identity" do
+
+    de1 = countries(:de1)
+    de2 = countries(:de2)
+    de3 = countries(:de3)
+    ddr = countries(:ddr)
+    uk1 = countries(:uk1)
+    uk2 = countries(:uk2)
+    sco = countries(:scotland)
+    cal = countries(:caledonia)
+
+    assert_equal de3, Country.find_by_identity('DEU')
+    assert_nil Country.find_by_identity('DDR')
+    assert_equal uk2, Country.find_by_identity('GBR')
+    assert_equal sco, Country.find_by_identity('SCO')
+
+    assert_equal de3, Country.find_by_identity('DEU', Date.new(3000,1,1))
+    assert_equal de3, Country.find_by_identity('DEU', Date.new(2000,1,1))
+    assert_equal de3, Country.find_by_identity('DEU', Date.new(1990,10,3))
+    assert_equal de2, Country.find_by_identity('DEU', Date.new(1990,10,2))
+    assert_equal de2, Country.find_by_identity('DEU', Date.new(1970,1,1))
+    assert_equal de2, Country.find_by_identity('DEU', Date.new(1949,10,7))
+    assert_equal de1, Country.find_by_identity('DEU', Date.new(1949,10,6))
+    assert_equal de1, Country.find_by_identity('DEU', Date.new(1940,1,1))
+    assert_equal de1, Country.find_by_identity('DEU', Date.new(1000,1,1))
+    assert_equal cal, Country.find_by_identity('CL',  Date.new(3000,1,1))
+    assert_equal de3, Country.find_by_identity('DEU', Date.new(2000,1,1))
+    assert_equal de3, Country.find_by_identity('DEU', Date.new(1990,10,3))
+    assert_equal de2, Country.find_by_identity('DEU', Date.new(1990,10,2))
+    assert_equal de2, Country.find_by_identity('DEU', Date.new(1970,1,1))
+    assert_equal de2, Country.find_by_identity('DEU', Date.new(1949,10,7))
+    assert_equal de1, Country.find_by_identity('DEU', Date.new(1949,10,6))
+    assert_equal de1, Country.find_by_identity('DEU', Date.new(1940,1,1))
+    assert_equal de1, Country.find_by_identity('DEU', Date.new(1000,1,1))
+    assert_nil        Country.find_by_identity('DDR', Date.new(1940,1,1))
+    assert_nil        Country.find_by_identity('DDR', Date.new(1949,10,6))
+    assert_equal ddr, Country.find_by_identity('DDR', Date.new(1949,10,7))
+    assert_equal ddr, Country.find_by_identity('DDR', Date.new(1970,1,1))
+    assert_equal ddr, Country.find_by_identity('DDR', Date.new(1990,10,2))
+    assert_nil        Country.find_by_identity('DDR', Date.new(1990,10,3))
+    assert_nil        Country.find_by_identity('DDR', Date.new(2015,1,1))
+
+  end
+
+  test "identity_exists?" do
+
+    de1 = countries(:de1)
+    de2 = countries(:de2)
+    de3 = countries(:de3)
+    ddr = countries(:ddr)
+    uk1 = countries(:uk1)
+    uk2 = countries(:uk2)
+    sco = countries(:scotland)
+    cal = countries(:caledonia)
+
+    assert  Country.identity_exists?('DEU')
+    assert  Country.identity_exists?('DDR')
+    assert  Country.identity_exists?('GBR')
+    assert  Country.identity_exists?('SCO')
+
+    assert  Country.identity_exists?('DEU', Date.new(3000,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(2000,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(1990,10,3))
+    assert  Country.identity_exists?('DEU', Date.new(1990,10,2))
+    assert  Country.identity_exists?('DEU', Date.new(1970,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(1949,10,7))
+    assert  Country.identity_exists?('DEU', Date.new(1949,10,6))
+    assert  Country.identity_exists?('DEU', Date.new(1940,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(1000,1,1))
+    assert  Country.identity_exists?('CL',  Date.new(3000,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(2000,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(1990,10,3))
+    assert  Country.identity_exists?('DEU', Date.new(1990,10,2))
+    assert  Country.identity_exists?('DEU', Date.new(1970,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(1949,10,7))
+    assert  Country.identity_exists?('DEU', Date.new(1949,10,6))
+    assert  Country.identity_exists?('DEU', Date.new(1940,1,1))
+    assert  Country.identity_exists?('DEU', Date.new(1000,1,1))
+    assert !Country.identity_exists?('DDR', Date.new(1940,1,1))
+    assert !Country.identity_exists?('DDR', Date.new(1949,10,6))
+    assert  Country.identity_exists?('DDR', Date.new(1949,10,7))
+    assert  Country.identity_exists?('DDR', Date.new(1970,1,1))
+    assert  Country.identity_exists?('DDR', Date.new(1990,10,2))
+    assert !Country.identity_exists?('DDR', Date.new(1990,10,3))
+    assert !Country.identity_exists?('DDR', Date.new(2015,1,1))
+
+  end
+
   test "Model query methods" do
 
     de1 = countries(:de1)
@@ -101,7 +189,7 @@ class ActsAsScdTest < ActiveSupport::TestCase
     cal = countries(:caledonia)
 
     assert_equal de3, Country.current.where(identity: 'DEU').first
-    assert_nil Country.initial.where(identity: 'DDR').first
+    assert_nil Country.current.where(identity: 'DDR').first
     assert_equal uk2, Country.current.where(identity: 'GBR').first
     assert_equal sco, Country.current.where(identity: 'SCO').first
     assert_equal 5, Country.current.count
@@ -158,9 +246,15 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal 5, Country.at(Date.new(2015,1,1)).count
 
     assert_equal 6, Country.ended.count
-    # assert_equal 1, Country.ended.latest.count
     assert_equal ddr, Country.ended.where(identity: 'DDR').first
 
+    assert_equal [de1, de2, de3], Country.all_of('DEU')
+
+    # These generate queries that are valid for PostgreSQL but not for SQLite3
+    #   (v1, v2) IN SELECT ...
+    # assert_equal 1, Country.ended.latest.count
+    # assert_equal 1, Country.terminated.count
+    # assert_equal 1, Country.superseded.count
 end
 
   test "Model query methods that return objects" do
