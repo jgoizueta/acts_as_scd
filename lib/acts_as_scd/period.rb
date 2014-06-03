@@ -15,10 +15,15 @@ module ActsAsScd
       attr_reader :value
 
       def to_date
-        begin
-          Date.new *parse
-        rescue
-          raise parse.inspect
+        case @value
+        when START_OF_TIME, END_OF_TIME
+          nil
+        else
+          begin
+            Date.new *parse
+          rescue
+            raise parse.inspect
+          end
         end
       end
 

@@ -68,11 +68,21 @@ module ActsAsScd
   end
 
   def effective_from_date
-    Period::DateValue[effective_from].to_date
+    case effective_from
+    when END_OF_TIME
+      raise "Invalid effective_from value: #{END_OF_TIME}"
+    else
+      Period::DateValue[effective_from].to_date
+    end
   end
 
   def effective_to_date
-    Period::DateValue[effective_to].to_date
+    case effective_to
+    when START_OF_TIME
+      raise "Invalid effective_to value #{START_OF_TIME}"
+    else
+      Period::DateValue[effective_to].to_date
+    end
   end
 
   def initial?

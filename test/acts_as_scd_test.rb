@@ -89,6 +89,15 @@ class ActsAsScdTest < ActiveSupport::TestCase
     assert_equal ActsAsScd::END_OF_TIME, country.effective_to
   end
 
+  test "Effective dates can be accessed as Date values" do
+    assert_nil countries(:de1).effective_from_date
+    assert_equal Date.new(1949,10,7), countries(:de1).effective_to_date
+    assert_equal Date.new(1949,10,7), countries(:de2).effective_from_date
+    assert_equal Date.new(1990,10,3), countries(:de2).effective_to_date
+    assert_equal Date.new(1990,10,3), countries(:de3).effective_from_date
+    assert_nil countries(:de3).effective_to_date
+  end
+
   test "create identities and iterations" do
     t3 = Country.create_identity(name: 'Testing 3', code: 'T3', area: 1000)
     assert_equal t3.identity, 'T3'
