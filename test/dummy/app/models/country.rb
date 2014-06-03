@@ -1,7 +1,7 @@
 class Country < ActiveRecord::Base
 
   # Countries will be identified by a 2-character code
-  has_identity :string, limit: 2
+  has_identity :string, limit: 3
 
   # Countries have cities wich also go through iterations
   has_many_iterations_through_identity :cities

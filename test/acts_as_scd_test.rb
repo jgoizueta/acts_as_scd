@@ -15,8 +15,8 @@ ActiveRecord::Schema.verbose = false
 ActiveRecord::Schema.define do
 
   create_table :countries, :force => true do |t|
-    t.string  :code, limit: 2
-    t.string  :identity, limit: 2
+    t.string  :code, limit: 3
+    t.string  :identity, limit: 3
     t.integer :effective_from, default: 0
     t.integer :effective_to, default: 99999999
     t.string  :name
