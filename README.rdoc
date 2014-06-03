@@ -1,29 +1,72 @@
-= Acts as SCD (Slowly Changing Dimension)
+= Acts as SCD
 
-This gem provides SCD behaviour for ActiveRecord models.
+This gem provides SCD (Slowly Changing Dimension) behaviour for ActiveRecord models.
 The kind of SCD implemented is "Type 2" acording to http://en.wikipedia.org/wiki/Slowly_changing_dimension
 
-Models that use this plugin must provide an +identity+ column that establishes the identity
-of an entity that may be representented by multiple records (iterations), each one of them
-representing the entity for a specific 'effective' period of time.
+A model which includes this extension keeps the history of entities that change 'slowly'
+(here slowly meaning not more often than once a day). Any such entity is identified by an
++identity+ column (computed automatically from some natural key(s)) which is not a primary
+key of the table. For a single entity multipe records may exist in the table that represent
+the entity at different periods of time. We'll use this terminology here:
 
-The effective period of an iteration is defined with day-granularity by two integer columns,
-+effective_from+ and +effective_to+ using YYYYMMDD format.
+* *Identity*: is the key that identifies an entity of a SCD through time.
+  Here we'll often use identity in a loose sense to refer to the entity which
+  it identifies.
+* An *Iteration* is each of the revisions or variations over time that an Identity may go through.
+  Each iteration of an identity is identified by a surrogate primary key (id by default)
+  has an effective period in which the iteration is the valid
+  representation of the identity. Here this period is specified by start and end dates (so that
+  variations which have any frequency higher than daily cannot be handled by this method)
+
+Models that use this plugin must provide an +identity+ column that establishes the identity
+of the entities in addition to the table's primary key that identifies each iteration (revision)
+of the entity. An iteration is active at an *effective* period of time which is is defined,
+with day-granularity, by two integer columns, +effective_from+ and +effective_to+, using YYYYMMDD format.
+
 By default effective_from has value 0 and effective_to 99999999; these special values meaning
 unlimited periods of time (0 represents the 'start of time' and 99999999 the 'end of time').
 
-SCD models must provide a +compute_identity+ method to compute the identity attribute.
+SCD models must also provide a +compute_identity+ method to compute the identity attribute from
+other attributes of the record.
 
-Here we use this terms:
+== Identity and Iteration creation and querying
 
-* *Identity*: key that identifies an entity of a SCD through time. The tables will have
-  additional surrogate primary keys (id by default) that identify each iteration of
-  the entity. Here we'll use identity often in a loose sense to refer to the entity which
-  it identifies.
-* *Iteration*: the different revisions or variations over time that an Identity may go through.
-  Each iteration of an identity has an effective period in which the iteration is the valid
-  representation of the identity. Here this period is specified by start and end dates (so that
-  variations which have any frequency higher than daily cannot be handled by this method)
+Assume that we have a model @Country@ with attributes @code@, @name@, @area@, etc.
+We can attarch 'acts-as-scd' behaviour to this model using either the @acts_as_scd@ or
+@has_identity@ methods. [FIXME: to be determined if they are going to be synonyms or not]
+
+We'll use the latter. The parameter passed to it is the type of the @identity@ column.
+Notice that we must define how identity is to be computed.
+
+  class Country < ActiveRecord::Base
+    has_identity :string, limit: 3
+    def compute_identity
+      self.identity = code
+    end
+  end
+
+We would define the schema for this table:
+
+  create_table :countries do |t|
+    t.string :code, limit: 3
+    t.string :name
+    t.float  :area
+    t.string :identity, limit: 3
+    t.integer :effective_from, default: 0
+    t.integer :effective_to, default: 99999999
+  end
+
+Imagine you're in a country named Germany at a date such as 1930-01-01 (Disclaimer: no historic accuracy intented).
+We can create a record to represent it like so:
+
+  Country.create_identity code: 'DEU', name: 'Germany', area: 357_02
+
+Now we have a single record that represents an *iteration* of the country with an indefinite life span
+(even though we probably know the country hasn’t been around forever, we’re not interested now in such details).
+
+We can query for the *current* iteration of Germany with:
+
+  Country.current.where(identity: 'DEU').first
 
 Note that the +current+ term, when applied to identities, is used to mean the last iteration
 if it extends indefinitely to the future (effective_to == 99999999). The last iteration may
@@ -32,12 +75,83 @@ would not be current. Also, if iterations exist with effective dates in the futu
 current iterations may not be active at the current date. To get the iteration which is active
 at the current or any other date, the +at+ methods should be used.
 
-= TODO
+And also we can request the iteration that was active at some specific date:
+
+    Country.at(Date.new(1930,1,1)).where(identity: 'DEU').first
+
+Now, imagine a war comes and goes and the country is split in two. The original country
+can be modified as:
+
+  Country.create_iteration 'DEU', {area: 248_688}, Date.new(1949,10,7)
+
+Note that we identify the country by its identity and must only supply here the attributes that change
+from the 'current' existing iteration. Let's compute the area that Germany has lost:
+
+  germany_v1 = Country.initial.where(identity: 'DEU').first
+  germany_v2 = Country.current.where(identity: 'DEU').first
+  area = germany_v2.area - germany_v1.area
+
+A new country is established in the lost area; let's call it East Germany:
+
+  Country.create_identity code: 'DDR', name: 'East Germany', area: area
+
+To make things more interesting, let's assume some more time passes and someone
+breaks down the division between the countries at, say, 1990-10-03:
+
+  date = Date.new(1990,10,3)
+  deu = Country.current.where(identity: 'DEU').first
+  ddr = Country.current.where(identity: 'DDR').first
+  merged_area = deu.area + ddr.area
+  Country.current.where(code: 'DEU').first.terminate_identity(date)
+  Country.create_iteration 'DEU', {area: merged_area}, date
+
+  ....
+
+== Work in progresss
+
+You can tae a look at the tests while this is being developed...
+
+== Associations
+
+We'll use anoter model, City, to show how to work with associations between SCD models.
+
+...
+
+== BLockUpdate
+
+In some cases, modification of SCD tables is performed not on individual records, but
+on the whole table at a given date. A typical example of this is an industrial classification
+system such as SIC for the US (or NAICS for North America, UKSIC, CNAE --Spain-- GICS, ISIC, ....)
+
+...
+
+== Reference
+
+=== A. Declaration (methods introduced in ActiveRecord Base)
+
+=== B. Methods gained by SCD models
+
+==== Class Methods
+
+* Query methods returning (further-refinable) queries
+* Query methods that return objects
+* Methods with limitations
+
+==== Associations
+
+==== CRUD of Identities/Iterations
+
+==== Instance methods
+Related iterations, ...
+
+
+== TODO
 
 * Write Tests
 * Write Documentation
 * Require modal_fields or make it optional?
 * Create generator to add identity to a model and generate migration
+* Test with both Rails 3 & 4
 * Release gem 1.0.0
-* Test with Rails 3 & 4
+
 
