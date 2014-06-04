@@ -90,5 +90,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activerecord-jdbcsqlite3-adapter
   acts_as_scd!
   sqlite3
