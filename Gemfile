@@ -1,5 +1,8 @@
 source "https://rubygems.org"
 
+gem 'sqlite3', :platforms => [:ruby]
+gem 'activerecord-jdbcsqlite3-adapter', :platforms => [:jruby]
+
 # Declare your gem's dependencies in acts_as_scd.gemspec.
 # Bundler will treat runtime dependencies like base dependencies, and
 # development dependencies will be added by default to the :development group.
