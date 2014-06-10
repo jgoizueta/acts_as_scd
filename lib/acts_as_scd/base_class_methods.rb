@@ -32,10 +32,15 @@ module ActsAsScd
         @slowly_changing_columns << [fk, other_model.identity_column_definition.last]
         @slowly_changing_indices << fk
       end
-      belongs_to assoc, ->{ where "#{other_model.effective_to_column_sql()}=#{END_OF_TIME}" },
-                 options.reverse_merge(foreign_key: fk, primary_key: IDENTITY_COLUMN)
-      # For Rails 3 is this necessary?:
-      # belongs_to assoc, {:foreign_key=>fk, :primary_key=>IDENTITY_COLUMN, :conditions=>"#{other_model.effective_to_column_sql()}=#{END_OF_TIME}"}.merge(options)
+      if ActiveRecord::VERSION::MAJOR > 3
+        belongs_to assoc, ->{ where "#{other_model.effective_to_column_sql()}=#{END_OF_TIME}" },
+                   options.reverse_merge(foreign_key: fk, primary_key: IDENTITY_COLUMN)
+      else
+        belongs_to assoc, options.reverse_merge(
+                            foreign_key: fk, primary_key: IDENTITY_COLUMN,
+                            conditions: "#{other_model.effective_to_column_sql()}=#{END_OF_TIME}"
+                          )
+      end
       define_method :"#{assoc}_at" do |date=nil|
         other_model.at(date).where(IDENTITY_COLUMN=>send(fk)).first
       end

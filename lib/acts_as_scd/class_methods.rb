@@ -133,9 +133,15 @@ module ActsAsScd
       has_many :"#{assoc_singular}_iterations", class_name: other_model_name, foreign_key: fk, primary_key: pk
 
       # current_children
-      has_many assoc, ->{ where "#{other_model.effective_to_column_sql}=#{END_OF_TIME}" },
-               options.reverse_merge(foreign_key: fk, primary_key: pk)
-      # has_many assoc, {:foreign_key=>fk, :primary_key=>pk, :conditions=>"#{other_model.effective_to_column_sql}=#{END_OF_TIME}"}.merge(options)
+      if ActiveRecord::VERSION::MAJOR > 3
+        has_many assoc, ->{ where "#{other_model.effective_to_column_sql}=#{END_OF_TIME}" },
+                 options.reverse_merge(foreign_key: fk, primary_key: pk)
+      else
+        has_many assoc, options.reverse_merge(
+                          foreign_key: fk, primary_key: pk,
+                          conditions: "#{other_model.effective_to_column_sql}=#{END_OF_TIME}"
+                        )
+      end
 
       # children at some date
       define_method :"#{assoc}_at" do |date|
