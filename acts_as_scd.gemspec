@@ -15,9 +15,9 @@ Gem::Specification.new do |s|
   s.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.rdoc"]
   s.test_files = Dir["test/**/*"]
 
-  s.add_dependency "rails", "~> 4.1.1"
-  # we will make it work first with rails 3, then support Rails 4
+  # s.add_dependency "rails", "~> 4.1.1"
   # s.add_dependency "rails", "~> 3.2.13"
+  s.add_dependency "rails", ">= 3.2.13"
 
   s.add_dependency 'modalsupport', "~> 0.9.2"
 
